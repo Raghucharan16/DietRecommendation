@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+passlib[bcrypt]==1.7.4
+sqlalchemy
+transformers
+torch
+starlette
+sentencepiece
+bcrypt==3.2.0
+accelerate
+bitsandbytes
