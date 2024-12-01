@@ -1,13 +1,15 @@
-from transformers import GPT2Tokenizer, GPT2LMHeadModel
-import torch
+import requests
+import os
+from dotenv import load_dotenv
 
-tokenizer = GPT2Tokenizer.from_pretrained('Qwen/QwQ-32B-Preview')
-tokenizer.pad_token = tokenizer.eos_token
+# Load environment variables
+load_dotenv()
 
-model = GPT2LMHeadModel.from_pretrained('Qwen/QwQ-32B-Preview')
-model.eval()  # Set model to evaluation mode
+# Initialize the Inference Client
+# client = InferenceClient(api_key=os.getenv("HUGGINGFACE_API_KEY"))
+API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
+headers = {"Authorization": f"Bearer {os.getenv('HUGGINGFACE_API_KEY')}"}
 
-# Calculation functions
 def calculate_bmr(user_data):
     gender = user_data['gender'].lower()
     if gender == 'male':
@@ -28,11 +30,10 @@ def calculate_tdee(bmr, exercise_level):
     return bmr * factor
 
 def calculate_macros(tdee):
-    # Assume 50% carbs, 20% protein, 30% fat
     macros = {
-        'carbs': (tdee * 0.5) / 4,    # grams of carbs
-        'protein': (tdee * 0.2) / 4,  # grams of protein
-        'fat': (tdee * 0.3) / 9       # grams of fat
+        'carbs': (tdee * 0.5) / 4,
+        'protein': (tdee * 0.2) / 4,
+        'fat': (tdee * 0.3) / 9
     }
     return macros
 
@@ -41,49 +42,64 @@ def generate_diet_plan(user_data):
     tdee = calculate_tdee(bmr, user_data['exercise_level'])
     macros = calculate_macros(tdee)
     
-    # Construct a detailed prompt
-    prompt = f"""
-    Create a personalized and detailed diet plan for the following individual:
+    # Construct your prompt
+    prompt = f"""As a professional nutritionist, create a detailed one-day meal plan for:
 
-    - Age: {user_data['age']} years old
-    - Gender: {user_data['gender'].capitalize()}
-    - Weight: {user_data['weight']} kg
-    - Height: {user_data['height']} cm
-    - Vegan: {'Yes' if user_data['vegan'].lower() == 'yes' else 'No'}
-    - Exercise Level: {user_data['exercise_level'].capitalize()}
+Age: {user_data['age']} years
+Gender: {user_data['gender'].capitalize()}
+Weight: {user_data['weight']} kg
+Height: {user_data['height']} cm
+Vegan: {'Yes' if user_data['vegan'].lower() == 'yes' else 'No'}
+Exercise Level: {user_data['exercise_level'].capitalize()}
 
-    Calculated nutritional needs:
+Daily Requirements:
+- Total Calories: {tdee:.0f} kcal
+- Carbohydrates: {macros['carbs']:.0f}g
+- Protein: {macros['protein']:.0f}g 
+- Fat: {macros['fat']:.0f}g
 
-    - Basal Metabolic Rate (BMR): {bmr:.2f} kcal/day
-    - Total Daily Energy Expenditure (TDEE): {tdee:.2f} kcal/day
-    - Macronutrient Breakdown:
-        - Carbohydrates: {macros['carbs']:.0f} grams/day
-        - Protein: {macros['protein']:.0f} grams/day
-        - Fat: {macros['fat']:.0f} grams/day
+Provide a structured meal plan with:
+1. Breakfast
+2. Morning Snack
+3. Lunch
+4. Afternoon Snack
+5. Dinner
 
-    Please provide a meal plan for one day that meets these nutritional requirements, including breakfast, lunch, dinner, and snacks. The meal plan should be tailored to the individual's preferences. Each meal should include portion sizes and brief preparation instructions.
+For each meal include:
+- Specific foods and portions
+- Calories per meal
+- Preparation instructions
+- Macronutrient breakdown
+"""
 
-    Diet Plan:
-    """
+    payload = {
+        "inputs": prompt,
+        "parameters": {
+            "max_new_tokens": 500,
+            "do_sample": True,
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "repetition_penalty": 1.15,
+        },
+        "options": {
+            "use_cache": True,
+            "wait_for_model": True
+        }
+    }
 
-    # Tokenize and encode the prompt
-    inputs = tokenizer.encode(prompt, return_tensors='pt', truncation=True, max_length=1024, padding=True)
-    inputs = inputs.to(model.device)
-
-    # Generate text using the model
-    outputs = model.generate(
-        inputs,
-        max_length=1024,
-        do_sample=True,
-        top_p=0.9,
-        temperature=0.8,
-        num_return_sequences=1,
-        pad_token_id=tokenizer.eos_token_id
-    )
-
-    # Decode and process the generated text
-    diet_plan = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    # Extract the generated diet plan portion
-    diet_plan = diet_plan[len(prompt):].strip()
-
-    return diet_plan
+    try:
+        response = requests.post(API_URL, headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+        if isinstance(result, list) and 'generated_text' in result[0]:
+            generated_text = result[0]['generated_text']
+            # Extract the generated diet plan portion
+            diet_plan = generated_text[len(prompt):].strip()
+            return diet_plan
+        else:
+            error_message = result.get('error', 'Unknown error occurred.')
+            return f"Error: {error_message}"
+    except requests.exceptions.HTTPError as http_err:
+        return f"HTTP error occurred: {http_err}"
+    except Exception as err:
+        return f"Error generating diet plan: {err}"

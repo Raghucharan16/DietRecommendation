@@ -1,49 +1,69 @@
-# exercise_model.py
+import requests
+import os
+from dotenv import load_dotenv
 
-from transformers import GPT2Tokenizer, GPT2LMHeadModel
-import torch
+# Load environment variables
+load_dotenv()
 
-tokenizer = GPT2Tokenizer.from_pretrained('distilgpt2')
-tokenizer.pad_token = tokenizer.eos_token
+# Initialize the Inference Client
+# client = InferenceClient(api_key=os.getenv("HUGGINGFACE_API_KEY"))
+API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
+headers = {"Authorization": f"Bearer {os.getenv('HUGGINGFACE_API_KEY')}"}
 
-model = GPT2LMHeadModel.from_pretrained('distilgpt2')
-model.eval()
-model.eval() 
 
 def generate_exercise_plan(user_data):
-    # Construct a detailed prompt
-    prompt = f"""
-    Create a personalized and detailed exercise plan for the following individual:
+    prompt = f"""As a professional fitness trainer, create a detailed weekly exercise plan for:
 
-    - Age: {user_data['age']} years old
-    - Gender: {user_data['gender'].capitalize()}
-    - Weight: {user_data['weight']} kg
-    - Height: {user_data['height']} cm
-    - Exercise Level: {user_data['exercise_level'].capitalize()}
+Age: {user_data['age']} years
+Gender: {user_data['gender'].capitalize()}
+Weight: {user_data['weight']} kg
+Height: {user_data['height']} cm
+Fitness Level: {user_data['exercise_level'].capitalize()}
 
-    The exercise plan should cover one week, detailing daily activities including type of exercise, duration, intensity, and any relevant notes. The plan should be appropriate for the individual's current fitness level and goals. Include a mix of cardio, strength training, and flexibility exercises.
+Create a 7-day exercise program including:
+1. Types of exercises for each day
+2. Sets, reps, and duration
+3. Rest periods
+4. Intensity levels
+5. Warm-up and cool-down routines
 
-    Exercise Plan:
-    """
+Focus on:
+- Cardiovascular health
+- Strength training
+- Flexibility
+- Rest and recovery
 
-    # Tokenize and encode the prompt
-    inputs = tokenizer.encode(prompt, return_tensors='pt', truncation=True, max_length=1024, padding=True)
-    inputs = inputs.to(model.device)
+Provide specific instructions for form and technique for each exercise.
+"""
 
-    # Generate text using the model
-    outputs = model.generate(
-        inputs,
-        max_length=1024,
-        do_sample=True,
-        top_p=0.9,
-        temperature=0.8,
-        num_return_sequences=1,
-        pad_token_id=tokenizer.eos_token_id
-    )
+    payload = {
+        "inputs": prompt,
+        "parameters": {
+            "max_new_tokens": 500,
+            "do_sample": True,
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "repetition_penalty": 1.15,
+        },
+        "options": {
+            "use_cache": True,
+            "wait_for_model": True
+        }
+    }
 
-    # Decode and process the generated text
-    exercise_plan = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    # Extract the generated exercise plan portion
-    exercise_plan = exercise_plan[len(prompt):].strip()
-
-    return exercise_plan
+    try:
+        response = requests.post(API_URL, headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+        if isinstance(result, list) and 'generated_text' in result[0]:
+            generated_text = result[0]['generated_text']
+            # Extract the generated exercise plan portion
+            exercise_plan = generated_text[len(prompt):].strip()
+            return exercise_plan
+        else:
+            error_message = result.get('error', 'Unknown error occurred.')
+            return f"Error: {error_message}"
+    except requests.exceptions.HTTPError as http_err:
+        return f"HTTP error occurred: {http_err}"
+    except Exception as err:
+        return f"Error generating exercise plan: {err}"
