@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from .. import models, database
 from models import diet_model, exercise_model
+import markdown
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -31,11 +32,14 @@ def get_recommendations(request: Request, db: Session = Depends(get_db)):
         "exercise_level": user.exercise_level
     }
 
-    diet_plan = diet_model.generate_diet_plan(user_data)
-    exercise_plan = exercise_model.generate_exercise_plan(user_data)
+    diet_plan_md = diet_model.generate_diet_plan(user_data)
+    exercise_plan_md = exercise_model.generate_exercise_plan(user_data)
+
+    diet_plan_html = markdown.markdown(diet_plan_md)
+    exercise_plan_html = markdown.markdown(exercise_plan_md)
 
     return templates.TemplateResponse("recommendations.html", {
         "request": request,
-        "diet_plan": diet_plan,
-        "exercise_plan": exercise_plan
+        "diet_plan": diet_plan_html,
+        "exercise_plan": exercise_plan_html
     })
