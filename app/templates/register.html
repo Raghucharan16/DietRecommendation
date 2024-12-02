@@ -1,21 +1,32 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Register</title>
-    <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
-</head>
-<body>
-    <h1>Register</h1>
-    {% if error %}
-        <p class="error">{{ error }}</p>
-    {% endif %}
-    <form action="/register" method="post">
+    <link rel="stylesheet" type="text/css" href="/static/css/darktheme.css" />
+  </head>
+  <body>
+    <div class="navbar">
+      <ul>
+        <li><a href="/register" class="active">Register</a></li>
+        <li><a href="/login">Login</a></li>
+        <li><a href="/profile">My Profile</a></li>
+        <li><a href="/recommendations">Recommendations</a></li>
+      </ul>
+    </div>
+
+    <div class="content">
+      <h1>Register</h1>
+      {% if error %}
+      <p class="error">{{ error }}</p>
+      {% endif %}
+      <form action="/register" method="post">
         <label>Username:</label>
-        <input type="text" name="username" required><br>
+        <input type="text" name="username" required /><br />
         <label>Password:</label>
-        <input type="password" name="password" required><br>
-        <input type="submit" value="Register">
-    </form>
-    <p>Already have an account? <a href="/login">Login here</a></p>
-</body>
+        <input type="password" name="password" required /><br />
+        <input type="submit" value="Register" />
+      </form>
+      <p>Already have an account? <a href="/login">Login here</a></p>
+    </div>
+  </body>
 </html>
