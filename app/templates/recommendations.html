@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Recommendations</title>
-    <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
-</head>
-<body>
-    <h1>Your Personalized Recommendations</h1>
+    <link rel="stylesheet" type="text/css" href="/static/css/darktheme.css" />
+  </head>
+  <body>
+    <div class="navbar">
+      <ul>
+        <li><a href="/register">Register</a></li>
+        <li><a href="/login">Login</a></li>
+        <li><a href="/profile">My Profile</a></li>
+        <li><a href="/recommendations" class="active">Recommendations</a></li>
+      </ul>
+    </div>
 
-    <h2>Diet Plan</h2>
-    <pre>{{ diet_plan }}</pre>
+    <div class="content">
+      <h1>Your Personalized Recommendations</h1>
 
-    <h2>Exercise Plan</h2>
-    <pre>{{ exercise_plan }}</pre>
+      <h2>Diet Plan</h2>
+      <div>{{ diet_plan | safe }}</div>
 
-    <p><a href="/profile">Back to Profile</a></p>
-</body>
+      <h2>Exercise Plan</h2>
+      <div>{{ exercise_plan | safe }}</div>
+
+      <p><a href="/profile">Back to Profile</a></p>
+    </div>
+  </body>
 </html>
