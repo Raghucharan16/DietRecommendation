@@ -22,7 +22,7 @@ def profile_get(request: Request):
     return templates.TemplateResponse("profile.html", {"request": request})
 
 @router.post("/profile/update")
-def update_profile(request: Request, age: int = Form(...), gender: str = Form(...), weight: float = Form(...), height: float = Form(...), vegan: str = Form(...), exercise_level: str = Form(...), db: Session = Depends(get_db)):
+def update_profile(request: Request, age: int = Form(...), gender: str = Form(...), weight: float = Form(...), height: float = Form(...), vegan: str = Form(...), output: str = Form(...),exercise_level: str = Form(...), db: Session = Depends(get_db)):
     user_id = request.cookies.get("user_id")
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -32,6 +32,7 @@ def update_profile(request: Request, age: int = Form(...), gender: str = Form(..
     user.weight = weight
     user.height = height
     user.vegan = vegan
+    user.output = output
     user.exercise_level = exercise_level
     db.commit()
     return RedirectResponse(url="/recommendations", status_code=303)

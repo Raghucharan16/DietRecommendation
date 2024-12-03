@@ -11,4 +11,5 @@ class User(Base):
     weight = Column(Float, nullable=True)
     height = Column(Float, nullable=True)
     vegan = Column(String, nullable=True)
+    output = Column(String, nullable=True)
     exercise_level = Column(String, nullable=True)

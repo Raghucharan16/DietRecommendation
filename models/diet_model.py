@@ -41,9 +41,12 @@ def generate_diet_plan(user_data):
     bmr = calculate_bmr(user_data)
     tdee = calculate_tdee(bmr, user_data['exercise_level'])
     macros = calculate_macros(tdee)
-    
+    output_goal = user_data['output']  # 'weight_loss' or 'weight_gain'
+
+    # Map the output goal to a more readable format
+    goal_description = "Weight Loss" if output_goal == "weight_loss" else "Weight Gain"
     # Construct your prompt
-    prompt = f"""As a professional nutritionist, provide a personalized analysis and advice for the following individual, followed by a detailed one-day meal plan.
+    prompt = f"""As a professional nutritionist, provide a personalized analysis and advice for the following individual, aiming for {goal_description} followed by a one-day meal plan.
 
 **User Information:**
 - Age: {user_data['age']} years
@@ -70,13 +73,8 @@ def generate_diet_plan(user_data):
    - Lunch
    - Afternoon Snack
    - Dinner
-4. For each meal, include:
-   - Specific foods and portions
-   - Calories per meal
-   - Preparation instructions
-   - Macronutrient breakdown
-5. Write in the second person, addressing the user directly.
-6. Maintain a professional and encouraging tone without using phrases like "Hey there" or placeholders like "[Your Name]".
+4. Write in the second person, addressing the user directly.
+5. Maintain a professional and encouraging tone without using phrases like "Hey there" or placeholders like "[Your Name]".
 
 **Begin with the analysis and advice:**
 """

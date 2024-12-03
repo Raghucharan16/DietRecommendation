@@ -12,7 +12,10 @@ headers = {"Authorization": f"Bearer {os.getenv('HUGGINGFACE_API_KEY')}"}
 
 
 def generate_exercise_plan(user_data):
-    prompt = f"""As a professional fitness trainer, analyze the following individual's fitness data and provide a personalized overview and advice. Then, create a detailed weekly exercise plan.
+
+    output_goal = user_data['output']  # 'weight_loss' or 'weight_gain'
+    goal_description = "Weight Loss" if output_goal == "weight_loss" else "Weight Gain"
+    prompt =  prompt = f"""As a professional body training expert and nutritionist, provide a personalized analysis and advice for the following individual, aiming for {goal_description}.
 
     **User Information:**
     - Age: {user_data['age']} years
@@ -26,8 +29,7 @@ def generate_exercise_plan(user_data):
     2. Offer personalized advice to help them achieve their fitness goals.
     3. Create a structured 7-day exercise program including:
         - Types of exercises for each day
-        - Sets, reps, and duration
-        - Rest periods
+        - Sets, reps,duration, and rest intervals
         - Intensity levels
         - Warm-up and cool-down routines
     4. Provide specific instructions for form and technique for each exercise.

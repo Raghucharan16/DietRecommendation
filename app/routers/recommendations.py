@@ -29,6 +29,7 @@ def get_recommendations(request: Request, db: Session = Depends(get_db)):
         "weight": user.weight,
         "height": user.height,
         "vegan": user.vegan,
+        "output": user.output,
         "exercise_level": user.exercise_level
     }
 
