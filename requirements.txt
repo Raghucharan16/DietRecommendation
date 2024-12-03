@@ -11,3 +11,4 @@ sentencepiece
 bcrypt==3.2.0
 accelerate
 bitsandbytes
+markdown
