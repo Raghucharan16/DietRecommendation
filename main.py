@@ -10,7 +10,6 @@ app.include_router(recommendations.router)
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-# Add this route to handle the root URL
 @app.get("/")
 async def root():
     return RedirectResponse(url="/login")

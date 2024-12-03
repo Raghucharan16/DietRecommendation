@@ -7,7 +7,7 @@ load_dotenv()
 
 # Initialize the Inference Client
 # client = InferenceClient(api_key=os.getenv("HUGGINGFACE_API_KEY"))
-API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
+API_URL = "https://api-inference.huggingface.co/models/Qwen/QwQ-32B-Preview"
 headers = {"Authorization": f"Bearer {os.getenv('HUGGINGFACE_API_KEY')}"}
 
 def calculate_bmr(user_data):
@@ -43,39 +43,48 @@ def generate_diet_plan(user_data):
     macros = calculate_macros(tdee)
     
     # Construct your prompt
-    prompt = f"""As a professional nutritionist, create a detailed one-day meal plan for:
+    prompt = f"""As a professional nutritionist, provide a personalized analysis and advice for the following individual, followed by a detailed one-day meal plan.
 
-Age: {user_data['age']} years
-Gender: {user_data['gender'].capitalize()}
-Weight: {user_data['weight']} kg
-Height: {user_data['height']} cm
-Vegan: {'Yes' if user_data['vegan'].lower() == 'yes' else 'No'}
-Exercise Level: {user_data['exercise_level'].capitalize()}
+**User Information:**
+- Age: {user_data['age']} years
+- Gender: {user_data['gender'].capitalize()}
+- Weight: {user_data['weight']} kg
+- Height: {user_data['height']} cm
+- Vegan: {'Yes' if user_data['vegan'].lower() == 'yes' else 'No'}
+- Exercise Level: {user_data['exercise_level'].capitalize()}
 
-Daily Requirements:
-- Total Calories: {tdee:.0f} kcal
-- Carbohydrates: {macros['carbs']:.0f}g
-- Protein: {macros['protein']:.0f}g 
-- Fat: {macros['fat']:.0f}g
+**Calculated Nutritional Requirements:**
+- Basal Metabolic Rate (BMR): {bmr:.2f} kcal/day
+- Total Daily Energy Expenditure (TDEE): {tdee:.2f} kcal/day
+- Macronutrient Breakdown:
+    - Carbohydrates: {macros['carbs']:.0f}g/day
+    - Protein: {macros['protein']:.0f}g/day
+    - Fat: {macros['fat']:.0f}g/day
 
-Provide a structured meal plan with:
-1. Breakfast
-2. Morning Snack
-3. Lunch
-4. Afternoon Snack
-5. Dinner
+**Instructions:**
+1. Begin with a brief analysis of the user's current health status based on the data above.
+2. Offer personalized advice to help them achieve optimal health.
+3. Create a structured one-day meal plan that includes:
+   - Breakfast
+   - Morning Snack
+   - Lunch
+   - Afternoon Snack
+   - Dinner
+4. For each meal, include:
+   - Specific foods and portions
+   - Calories per meal
+   - Preparation instructions
+   - Macronutrient breakdown
+5. Write in the second person, addressing the user directly.
+6. Maintain a professional and encouraging tone without using phrases like "Hey there" or placeholders like "[Your Name]".
 
-For each meal include:
-- Specific foods and portions
-- Calories per meal
-- Preparation instructions
-- Macronutrient breakdown
+**Begin with the analysis and advice:**
 """
 
     payload = {
         "inputs": prompt,
         "parameters": {
-            "max_new_tokens": 500,
+            "max_new_tokens": 1024,
             "do_sample": True,
             "temperature": 0.7,
             "top_p": 0.9,

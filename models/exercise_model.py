@@ -7,39 +7,38 @@ load_dotenv()
 
 # Initialize the Inference Client
 # client = InferenceClient(api_key=os.getenv("HUGGINGFACE_API_KEY"))
-API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
+API_URL = "https://api-inference.huggingface.co/models/Qwen/QwQ-32B-Preview"
 headers = {"Authorization": f"Bearer {os.getenv('HUGGINGFACE_API_KEY')}"}
 
 
 def generate_exercise_plan(user_data):
-    prompt = f"""As a professional fitness trainer, create a detailed weekly exercise plan for:
+    prompt = f"""As a professional fitness trainer, analyze the following individual's fitness data and provide a personalized overview and advice. Then, create a detailed weekly exercise plan.
 
-Age: {user_data['age']} years
-Gender: {user_data['gender'].capitalize()}
-Weight: {user_data['weight']} kg
-Height: {user_data['height']} cm
-Fitness Level: {user_data['exercise_level'].capitalize()}
+    **User Information:**
+    - Age: {user_data['age']} years
+    - Gender: {user_data['gender'].capitalize()}
+    - Weight: {user_data['weight']} kg
+    - Height: {user_data['height']} cm
+    - Fitness Level: {user_data['exercise_level'].capitalize()}
 
-Create a 7-day exercise program including:
-1. Types of exercises for each day
-2. Sets, reps, and duration
-3. Rest periods
-4. Intensity levels
-5. Warm-up and cool-down routines
+    **Instructions:**
+    1. Provide a brief analysis of the user's current fitness status based on the data above.
+    2. Offer personalized advice to help them achieve their fitness goals.
+    3. Create a structured 7-day exercise program including:
+        - Types of exercises for each day
+        - Sets, reps, and duration
+        - Rest periods
+        - Intensity levels
+        - Warm-up and cool-down routines
+    4. Provide specific instructions for form and technique for each exercise.
 
-Focus on:
-- Cardiovascular health
-- Strength training
-- Flexibility
-- Rest and recovery
-
-Provide specific instructions for form and technique for each exercise.
-"""
+    **Begin with the analysis and advice:**
+    """
 
     payload = {
         "inputs": prompt,
         "parameters": {
-            "max_new_tokens": 500,
+            "max_new_tokens": 1024,
             "do_sample": True,
             "temperature": 0.7,
             "top_p": 0.9,
