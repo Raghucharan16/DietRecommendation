@@ -5,15 +5,13 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Initialize the Inference Client
-# client = InferenceClient(api_key=os.getenv("HUGGINGFACE_API_KEY"))
 API_URL = "https://api-inference.huggingface.co/models/Qwen/QwQ-32B-Preview"
 headers = {"Authorization": f"Bearer {os.getenv('HUGGINGFACE_API_KEY')}"}
 
 
 def generate_exercise_plan(user_data):
 
-    output_goal = user_data['output']  # 'weight_loss' or 'weight_gain'
+    output_goal = user_data['output'] 
     goal_description = "Weight Loss" if output_goal == "weight_loss" else "Weight Gain"
     prompt =  prompt = f"""As a professional body training expert and nutritionist, provide a personalized analysis and advice for the following individual, aiming for {goal_description}.
 
