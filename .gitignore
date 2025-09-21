@@ -4,3 +4,5 @@ users.db
 __pycache__
 user_registrations.csv
 user.db
+.vscode
+*.pyc

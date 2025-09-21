@@ -1,29 +1,123 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
-  <head>
-    <title>Recommendations</title>
-    <link rel="stylesheet" type="text/css" href="/static/css/darktheme.css" />
-  </head>
-  <body>
-    <div class="navbar">
-      <ul>
-        <li><a href="/register">Register</a></li>
-        <li><a href="/login">Login</a></li>
-        <li><a href="/profile">My Profile</a></li>
-        <li><a href="/recommendations" class="active">Recommendations</a></li>
-      </ul>
+<head>
+    <title>Your Health Recommendations</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Inline CSS for Recommendations Page */
+        .container {
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 2rem 3rem !important;
+        }
+        
+        .recommendations {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 3rem !important;
+            margin-top: 2rem !important;
+        }
+        
+        .recommendation-section {
+            margin-bottom: 0 !important;
+        }
+        
+        .recommendation-section h2 {
+            font-size: 1.8rem !important;
+            color: #2563eb !important;
+            margin-bottom: 1.5rem !important;
+            padding-bottom: 0.5rem !important;
+            border-bottom: 2px solid #e5e7eb !important;
+        }
+        
+        .plan-content {
+            line-height: 1.7 !important;
+            color: #1f2937 !important;
+        }
+        
+        .plan-content h3 {
+            color: #2563eb !important;
+            font-size: 1.2rem !important;
+            margin-top: 1.5rem !important;
+            margin-bottom: 0.8rem !important;
+            font-weight: 600 !important;
+        }
+        
+        .plan-content ul {
+            margin: 1rem 0 !important;
+            padding-left: 1.5rem !important;
+        }
+        
+        .plan-content li {
+            margin-bottom: 0.5rem !important;
+        }
+        
+        .plan-content p {
+            margin-bottom: 1rem !important;
+        }
+        
+        .actions {
+            grid-column: 1 / -1 !important;
+            text-align: center !important;
+            margin-top: 3rem !important;
+            padding-top: 2rem !important;
+            border-top: 2px solid #e5e7eb !important;
+        }
+        
+        .disclaimer {
+            grid-column: 1 / -1 !important;
+            margin-top: 2rem !important;
+            text-align: center !important;
+            color: #6b7280 !important;
+            font-size: 0.9rem !important;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem !important;
+            }
+            
+            .recommendations {
+                grid-template-columns: 1fr !important;
+                gap: 2rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Your Personalized Health Recommendations</h1>
+            <p class="subtitle">Based on your health profile and goals</p>
+        </div>
+        
+        <div class="recommendations">
+            <div class="recommendation-section">
+                <h2>🥗 7-Day Personalized Diet Plan</h2>
+                <div class="plan-content">
+                    {{ diet_plan | safe }}
+                </div>
+            </div>
+            
+            <div class="recommendation-section">
+                <h2>💪 7-Day Custom Exercise Plan</h2>
+                <div class="plan-content">
+                    {{ exercise_plan | safe }}
+                </div>
+            </div>
+            
+            <div class="actions">
+                <a href="/profile" class="btn btn-secondary">Update Profile</a>
+                <button onclick="window.print()" class="btn btn-primary">Print Recommendations</button>
+            </div>
+            
+            <div class="disclaimer">
+                <p><strong>⚠️ Disclaimer:</strong> These recommendations are generated based on your profile information and are for educational purposes only. Please consult with healthcare professionals before making significant changes to your diet or exercise routine.</p>
+            </div>
+        </div>
     </div>
-
-    <div class="content">
-      <h1>Your Personalized Recommendations</h1>
-
-      <h2>Diet Plan</h2>
-      <div>{{ diet_plan | safe }}</div>
-
-      <h2>Exercise Plan</h2>
-      <div>{{ exercise_plan | safe }}</div>
-
-      <p><a href="/profile">Back to Profile</a></p>
-    </div>
-  </body>
+</body>
 </html>

@@ -3,6 +3,16 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from .. import models, database
+import sys
+import os
+import importlib.util
+
+# Add the project root to sys.path if not already there
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Import the updated models
 from models import diet_model, exercise_model
 import markdown
 
@@ -35,6 +45,12 @@ def get_recommendations(request: Request, db: Session = Depends(get_db)):
 
     diet_plan_md = diet_model.generate_diet_plan(user_data)
     exercise_plan_md = exercise_model.generate_exercise_plan(user_data)
+
+    # Debug: Print to console if there are errors
+    if diet_plan_md and diet_plan_md.startswith("Error"):
+        print(f"Diet Model Error: {diet_plan_md}")
+    if exercise_plan_md and exercise_plan_md.startswith("Error"):
+        print(f"Exercise Model Error: {exercise_plan_md}")
 
     diet_plan_html = markdown.markdown(diet_plan_md)
     exercise_plan_html = markdown.markdown(exercise_plan_md)

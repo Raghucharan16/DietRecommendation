@@ -1,64 +1,75 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
-  <head>
-    <title>User Profile</title>
-    <link rel="stylesheet" type="text/css" href="/static/css/darktheme.css" />
-  </head>
-  <body>
-    <div class="navbar">
-      <ul>
-        <li><a href="/register">Register</a></li>
-        <li><a href="/login">Login</a></li>
-        <li><a href="/profile" class="active">My Profile</a></li>
-        <li><a href="/recommendations">Recommendations</a></li>
-      </ul>
+<head>
+    <title>Profile</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Update Your Profile</h1>
+            <p class="subtitle">Please fill in your health information to get personalized recommendations</p>
+            <form method="post" action="/profile/update">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Age:</label>
+                        <input type="number" name="age" required min="1" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender:</label>
+                        <select name="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Weight (kg):</label>
+                        <input type="number" name="weight" step="0.1" required min="20" max="300">
+                    </div>
+                    <div class="form-group">
+                        <label>Height (cm):</label>
+                        <input type="number" name="height" step="0.1" required min="100" max="250">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Dietary Preference:</label>
+                    <select name="vegan" required>
+                        <option value="">Select Diet Type</option>
+                        <option value="vegan">Vegan</option>
+                        <option value="vegetarian">Vegetarian</option>
+                        <option value="non-vegetarian">Non-Vegetarian</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Health Goal:</label>
+                    <select name="output" required>
+                        <option value="">Select Your Goal</option>
+                        <option value="weight_loss">Weight Loss</option>
+                        <option value="weight_gain">Weight Gain</option>
+                        <option value="muscle_gain">Muscle Gain</option>
+                        <option value="maintain">Maintain Weight</option>
+                        <option value="general_health">General Health</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Exercise Level:</label>
+                    <select name="exercise_level" required>
+                        <option value="">Select Exercise Level</option>
+                        <option value="sedentary">Sedentary (little or no exercise)</option>
+                        <option value="light">Light (light exercise 1-3 days/week)</option>
+                        <option value="moderate">Moderate (moderate exercise 3-5 days/week)</option>
+                        <option value="heavy">Heavy (heavy exercise 6-7 days/week)</option>
+                        <option value="very_heavy">Very Heavy (very heavy exercise, physical job)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-large">Get My Recommendations</button>
+            </form>
+        </div>
     </div>
-
-    <div class="content">
-      <h1>Update Profile</h1>
-      <form action="/profile/update" method="post">
-        <label>Age:</label>
-        <input type="number" name="age" required /><br />
-
-        <label>Gender:</label>
-        <select name="gender" required>
-          <option value="">Select Gender</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option></select
-        ><br />
-
-        <label>Weight (kg):</label>
-        <input type="number" step="0.1" name="weight" required /><br />
-
-        <label>Height (cm):</label>
-        <input type="number" step="0.1" name="height" required /><br />
-
-        <label>Vegan:</label>
-        <select name="vegan" required>
-          <option value="">Are you vegan?</option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option></select
-        ><br />
-
-        <label>Output:</label>
-        <select name="output" required>
-          <option value="" disabled selected>What are you aiming for?</option>
-          <option value="weight_loss">Weight Loss</option>
-          <option value="weight_gain">Weight Gain</option>
-        </select><br />
-
-        <label>Exercise Level:</label>
-        <select name="exercise_level" required>
-          <option value="">Select Exercise Level</option>
-          <option value="sedentary">Sedentary</option>
-          <option value="light">Light</option>
-          <option value="moderate">Moderate</option>
-          <option value="active">Active</option>
-          <option value="very_active">Very Active</option></select
-        ><br />
-
-        <input type="submit" value="Update Profile" />
-      </form>
-    </div>
-  </body>
+</body>
 </html>
