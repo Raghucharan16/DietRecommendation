@@ -1,14 +1,19 @@
 import requests
 import os
 from dotenv import load_dotenv
+import re
 
 # Load environment variables
 load_dotenv()
 
-# Initialize the Inference Client
-# client = InferenceClient(api_key=os.getenv("HUGGINGFACE_API_KEY"))
-API_URL = "https://api-inference.huggingface.co/models/Qwen/QwQ-32B-Preview"
-headers = {"Authorization": f"Bearer {os.getenv('HUGGINGFACE_API_KEY')}"}
+API_URL = "https://router.huggingface.co/v1/chat/completions"
+headers = {
+    "Authorization": f"Bearer {os.environ['HF_TOKEN']}",
+}
+
+def query(payload):
+    response = requests.post(API_URL, headers=headers, json=payload)
+    return response.json()
 
 def calculate_bmr(user_data):
     gender = user_data['gender'].lower()
@@ -37,76 +42,93 @@ def calculate_macros(tdee):
     }
     return macros
 
+def clean_response(text):
+    """Clean the AI response to maintain professional medical tone"""
+    if not text:
+        return text
+    
+    # Remove casual phrases
+    casual_phrases = [
+        "Absolutely!", "Hey there", "Great question", "Of course!", 
+        "Sure thing", "No problem", "Definitely", "For sure",
+        "Totally", "Amazing", "Awesome", "Perfect", "Excellent question"
+    ]
+    
+    cleaned_text = text
+    for phrase in casual_phrases:
+        cleaned_text = re.sub(r'\b' + re.escape(phrase) + r'\b[!,.]?\s*', '', cleaned_text, flags=re.IGNORECASE)
+    
+    # Remove exclamation marks at the beginning of sentences
+    cleaned_text = re.sub(r'^\s*!+\s*', '', cleaned_text)
+    cleaned_text = re.sub(r'\n\s*!+\s*', '\n', cleaned_text)
+    
+    # Ensure professional medical tone
+    if cleaned_text and not cleaned_text.strip().startswith(('Based on', 'According to', 'Your', 'As a', 'Given')):
+        cleaned_text = "Based on your health profile, " + cleaned_text.lstrip()
+    
+    return cleaned_text.strip()
+
 def generate_diet_plan(user_data):
     bmr = calculate_bmr(user_data)
     tdee = calculate_tdee(bmr, user_data['exercise_level'])
     macros = calculate_macros(tdee)
-    output_goal = user_data['output']  # 'weight_loss' or 'weight_gain'
+    output_goal = user_data['output']
 
-    # Map the output goal to a more readable format
     goal_description = "Weight Loss" if output_goal == "weight_loss" else "Weight Gain"
-    # Construct your prompt
-    prompt = f"""As a professional nutritionist, provide a personalized analysis and advice for the following individual, aiming for {goal_description} followed by a one-day meal plan.
+    
+    prompt = f"""Create a 7-day diet plan for {goal_description} for a {user_data['age']}-year-old {user_data['gender']} ({user_data['weight']}kg, {user_data['height']}cm, {user_data['exercise_level']} activity, maintain the tone in second person as you are suggesting).
 
-**User Information:**
-- Age: {user_data['age']} years
-- Gender: {user_data['gender'].capitalize()}
-- Weight: {user_data['weight']} kg
-- Height: {user_data['height']} cm
-- Vegan: {'Yes' if user_data['vegan'].lower() == 'yes' else 'No'}
-- Exercise Level: {user_data['exercise_level'].capitalize()}
+Target: {tdee:.0f} calories daily | Macros: {macros['carbs']:.0f}g carbs, {macros['protein']:.0f}g protein, {macros['fat']:.0f}g fat
+{"Note: Vegan options only" if user_data['vegan'].lower() == 'yes' else ""}
 
-**Calculated Nutritional Requirements:**
-- Basal Metabolic Rate (BMR): {bmr:.2f} kcal/day
-- Total Daily Energy Expenditure (TDEE): {tdee:.2f} kcal/day
-- Macronutrient Breakdown:
-    - Carbohydrates: {macros['carbs']:.0f}g/day
-    - Protein: {macros['protein']:.0f}g/day
-    - Fat: {macros['fat']:.0f}g/day
+Format exactly as HTML:
 
-**Instructions:**
-1. Begin with a brief analysis of the user's current health status based on the data above.
-2. Offer personalized advice to help them achieve optimal health.
-3. Create a structured one-day meal plan that includes:
-   - Breakfast
-   - Morning Snack
-   - Lunch
-   - Afternoon Snack
-   - Dinner
-4. Write in the second person, addressing the user directly.
-5. Maintain a professional and encouraging tone without using phrases like "Hey there" or placeholders like "[Your Name]".
+<h3>Health Summary</h3>
+<p>BMI: [calculate and state]. [Brief recommendation in 2-3 sentence]</p>
 
-**Begin with the analysis and advice:**
-"""
+<h3>Weekly Diet Plan</h3>
+<p><strong>Monday:</strong></p>
+<ul>
+<li>Breakfast: [meal]</li>
+<li>Lunch: [meal]</li>
+<li>Dinner: [meal]</li>
+<li>Snack: [snack]</li>
+</ul>
 
-    payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 1024,
-            "do_sample": True,
-            "temperature": 0.7,
-            "top_p": 0.9,
-            "repetition_penalty": 1.15,
-        },
-        "options": {
-            "use_cache": True,
-            "wait_for_model": True
+<p><strong>Tuesday:</strong></p>
+<ul>
+<li>Breakfast: [meal]</li>
+<li>Lunch: [meal]</li>
+<li>Dinner: [meal]</li>
+<li>Snack: [snack]</li>
+</ul>
+
+[Continue for Wednesday through Sunday with same format]
+
+Keep meals simple and practical."""
+
+    messages = [
+        {
+            "role": "user",
+            "content": prompt
         }
-    }
+    ]
 
     try:
-        response = requests.post(API_URL, headers=headers, json=payload)
-        response.raise_for_status()
-        result = response.json()
-        if isinstance(result, list) and 'generated_text' in result[0]:
-            generated_text = result[0]['generated_text']
-            # Extract the generated diet plan portion
-            diet_plan = generated_text[len(prompt):].strip()
-            return diet_plan
+        response = query({
+            "messages": messages,
+            "model": "Qwen/Qwen3-Next-80B-A3B-Instruct:together",
+            "max_tokens": 2400,
+            "temperature": 0.7
+        })
+        
+        if "choices" in response and len(response["choices"]) > 0:
+            diet_plan = response["choices"][0]["message"]["content"]
+            return clean_response(diet_plan)
+        elif "error" in response:
+            return f"Unable to generate diet plan at this time. Error: {response['error']}"
         else:
-            error_message = result.get('error', 'Unknown error occurred.')
-            return f"Error: {error_message}"
-    except requests.exceptions.HTTPError as http_err:
-        return f"HTTP error occurred: {http_err}"
+            return "Unable to generate diet plan due to unexpected response format."
+            
     except Exception as err:
-        return f"Error generating diet plan: {err}"
+        return f"Unable to generate diet plan. Please try again later. Technical details: {err}"
