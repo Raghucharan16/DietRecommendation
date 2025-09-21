@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 from app.routers import auth, profile, recommendations
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = FastAPI()
 app.include_router(auth.router)
